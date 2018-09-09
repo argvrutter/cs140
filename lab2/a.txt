@@ -1,0 +1,1 @@
+Bad PGM file -- No 255 following the rows and columns

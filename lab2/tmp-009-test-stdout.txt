@@ -1,0 +1,4 @@
+# Rows:         240
+# Columns:      360
+# Pixels:     86400
+Avg Pixel:   81.126
