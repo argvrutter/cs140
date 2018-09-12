@@ -35,6 +35,7 @@ int main()
         return -1;
     }
     printf("P2\n%d %d \n255\n", rows, cols);
+    // iterate through all pixels and get inverse, 255 - pixel value
     for(int i=0; i<rows * cols; i++)
     {
         scanf("%hhu", &pixel);

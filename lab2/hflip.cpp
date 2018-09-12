@@ -13,21 +13,27 @@ typedef unsigned char Pix;
 
 int main()
 {
-    Pix pixel;
+    int pixel;
     std::vector<Pix> pixels;
     char label[5];
-    scanf("%2s", label);
-
-    if(strcmp(label,"P2"))
+    int c;
+    scanf("%3c", label);
+    // checks if label is there & has whitespace after it
+    if(strcmp(label,"P2") && strcmp(label, "P2\n"))
     {
         fprintf(stderr, "Bad PGM file -- first word is not P2\n");
         return -1;
     }
     int rows, cols, max;
     scanf("%d %d\n%d", &rows, &cols, &max);
-    if(rows <= 0 || cols <= 0)
+    if(rows <= 0)
     {
         fprintf(stderr, "Bad PGM file -- No column specification\n");
+        return -1;
+    }
+    if(cols <= 0)
+    {
+        fprintf(stderr, "Bad PGM file -- No row specification\n");
         return -1;
     }
     if(max != 255)
@@ -59,8 +65,39 @@ int main()
             printf("\n");
             // clear the pixel vector for the next row.
             pixels.clear();
+            c++;
+            // last column is swapped, break
+            if(c == cols)
+            {
+                // this scanf should result in eof
+                scanf("%d", &pixel);
+                if(!(feof(stdin)))
+                {
+                    fprintf(stderr, "Bad PGM file -- Extra stuff after the pixels\n");
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
         }
-        scanf("%hhu", &pixel);
-        pixels.push_back(pixel);
+        if(!scanf("%d", &pixel))
+        {
+            fprintf(stderr, "Bad PGM file -- pixel %d is not a number between 0 and 255\n", i);
+            return -1;
+        }
+        // check if value between 0 and 255
+        if(pixel < 0 || pixel > 255)
+        {
+            fprintf(stderr, "Bad PGM file -- pixel %d is not a number between 0 and 255\n", i);
+            return -1;
+        }
+        if(feof(stdin) || ferror(stdin))
+        {
+            fprintf(stderr, "Bad PGM file -- pixel %d is not a number between 0 and 255\n", i);
+            return -1;
+        }
+        pixels.push_back((Pix)pixel);
     }
 }

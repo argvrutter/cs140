@@ -16,22 +16,22 @@ int main(int argc, char** argv)
 {
     if(argc != 3)
     {
-        fprintf(stderr, "usage: \n");
+        fprintf(stderr, "usage: bigwhite rows cols\n");
         return -1;
     }
     // convert command line args to ints with atoi
     int rows = atoi(argv[1]);
     int cols = atoi(argv[2]);
-    if(rows < 0 || cols < 0)
+    if(rows <= 0 || cols <= 0)
     {
         fprintf(stderr, "usage: bigwhite rows cols\n");
         return -1;
     }
     // write header
-    fprintf(stdout, "P2\n%d %d \n255\n", rows, cols);
+    fprintf(stdout, "P2\n%d %d \n255\n", cols, rows);
 
     // write rows * cols 255's, whitespace doesn't really matter
-  
+
     for(int i=0; i<rows; i++)
     {
         for(int j=0; j<cols; j++)

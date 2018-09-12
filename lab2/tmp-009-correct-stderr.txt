@@ -1,1 +1,0 @@
-Bad PGM file -- pixel 86036 is not a number between 0 and 255

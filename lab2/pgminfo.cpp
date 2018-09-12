@@ -17,8 +17,9 @@ int main()
     int pixel;
     char label[5];
     double sum=0.0;
-    scanf("%2s", label);
-    if(strcmp(label,"P2"))
+    scanf("%3c", label);
+    // checks if label is there & has whitespace after it
+    if(strcmp(label,"P2 ") && strcmp(label, "P2\n"))
     {
         fprintf(stderr, "Bad PGM file -- first word is not P2\n");
         return -1;
@@ -43,11 +44,22 @@ int main()
     // loop thru all pixels
     for(int i=0; i<rows * cols; i++)
     {
-        scanf("%d", &pixel);
-        // check if value between 0 and 255
-        if(!(0 <= pixel <= 255))
+        // 0 things read
+        if(!scanf("%d", &pixel))
         {
             fprintf(stderr, "Bad PGM file -- pixel %d is not a number between 0 and 255\n", i+1);
+            return -1;
+        }
+        // check if value between 0 and 255
+        if(pixel < 0 || pixel > 255)
+        {
+            fprintf(stderr, "Bad PGM file -- pixel %d is not a number between 0 and 255\n", i);
+            return -1;
+        }
+        if(feof(stdin) || ferror(stdin))
+        {
+            fprintf(stderr, "Bad PGM file -- pixel %d is not a number between 0 and 255\n", i);
+            return -1;
         }
         sum += (double)pixel;
     }
@@ -57,6 +69,7 @@ int main()
     if(!(feof(stdin)))
     {
         fprintf(stderr, "Bad PGM file -- Extra stuff after the pixels\n");
+        return -1;
     }
 
     printf("# Rows:%*d\n", 12, cols);
