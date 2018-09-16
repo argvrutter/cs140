@@ -22,11 +22,12 @@ void pgm_write(const vector<IVec>& p)
 {
     int rows = p.size();
     int cols = p[0].size();
+    int i,j;
     printf("P2\n%d %d \n255\n", rows, cols);
 
-    for(int i=0; i<rows; i++)
+    for(i=0; i<rows; i++)
     {
-        for(int j=0; j<cols; j++)
+        for(j=0; j<cols; j++)
         {
             if((i * rows + j) % 20 == 0 && (i * rows + j) != 0)
             {
@@ -38,6 +39,11 @@ void pgm_write(const vector<IVec>& p)
             }
         }
     }
+    // newline at the end, if there already is one, then don't add another
+    if((i * rows + j) % 20 != 0)
+    {
+        printf("\n");
+    }
 }
 /**
  * @brief Creates a pgm file with (r)ows, (c)ols, & pgm value
@@ -48,12 +54,14 @@ void pgm_write(const vector<IVec>& p)
  */
 vector<IVec> pgm_create(int r, int c, uint8_t pv)
 {
+    // Allocate space to vector & set all elements = pv using resize
     vector<IVec> p;
     p.resize(r);
     for(IVec& r : p)
     {
-        r.resize(c);
+        r.resize(c, pv);
     }
+    return p;
 }
 /**
  * @brief Rotates pgm 90 deg cw.
@@ -73,25 +81,37 @@ void pgm_ccw(vector<IVec>& p)
 }
 /**
  * @brief adds w pixels around the border of p. All pixels will have value pv.
- * Cannot declare another 2d vector.
+ * Cannot declare another 2d vector. Required for partial
  * @param p  2d pixel vector
  * @param w  witdth of padding
  * @param pv value of pixel to pad with
  */
 void pgm_pad(vector<IVec>& p, int w, int pv)
 {
-
+    // Adds padding on the left & right of image
+    for(IVec& r : p)
+    {
+        r.insert(r.begin(), pv, w);
+        r.insert(r.end(), pv, w);
+    }
+    // Adds padding to top & bottom of image
+    IVec r(p[0].size(), pv);
+    p.insert(p.begin(), r, w);
+    p.insert(p.end(), r, w);
 }
 /**
  * @brief Changes p so that it has r*c copies of PGM file, laid out in a r*c grid.
- * Cannot declare another 2d vector.
+ * Cannot declare another 2d vector. Required for partial
  * @param p 2d pixel vector by reference
  * @param r number of rows of panels
  * @param c number of columns of panels
  */
 void pgm_panel(vector<IVec>& p, int r, int c)
 {
-
+    // duplicates each row, so that we now have 1 row of panes.
+    for(IVec& row : p) r.insert(r.end(), row, c-1);
+    // Populate columns
+    p.insert(p.end(), p, r-1);
 }
 /**
  * @brief Change p to a rectangular subset of the original picture, starting at row r,
