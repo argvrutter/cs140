@@ -20,30 +20,16 @@ typedef vector <int> IVec;
  */
 void pgm_write(const vector<IVec>& p)
 {
-    int rows = p.size();
-    int cols = p[0].size();
-    int i,j;
-    printf("P2\n%d %d \n255\n", rows, cols);
+    int rows = p.size(), cols = p[0].size();
+    printf("P2\n%d %d\n255\n", cols, rows);
 
-    for(i=0; i<rows; i++)
+    for(int i=0; i<rows * cols; i++)
     {
-        for(j=0; j<cols; j++)
-        {
-            if((i * rows + j) % 20 == 0 && (i * rows + j) != 0)
-            {
-                printf("%4d\n", p.at(i).at(j));
-            }
-            else
-            {
-                printf("%4d", p.at(i).at(j));
-            }
-        }
+        printf("%4d", p.at(i/cols).at(i%cols));
+        if(!((i+1) % 20)) printf("\n");
     }
     // newline at the end, if there already is one, then don't add another
-    if((i * rows + j) % 20 != 0)
-    {
-        printf("\n");
-    }
+    if((rows * cols) % 20) printf("\n");
 }
 /**
  * @brief Creates a pgm file with (r)ows, (c)ols, & pgm value
@@ -57,10 +43,7 @@ vector<IVec> pgm_create(int r, int c, uint8_t pv)
     // Allocate space to vector & set all elements = pv using resize
     vector<IVec> p;
     p.resize(r);
-    for(IVec& r : p)
-    {
-        r.resize(c, pv);
-    }
+    for(IVec& row : p) row.resize(c, pv);
     return p;
 }
 /**
@@ -69,7 +52,20 @@ vector<IVec> pgm_create(int r, int c, uint8_t pv)
  */
 void pgm_cw(vector<IVec>& p)
 {
-
+    vector<IVec> p90;
+    int rows = p[0].size(), cols = p.size();
+    // reserve flipped space
+    p90.resize(rows);
+    for(IVec& r : p90) r.resize(cols);
+    // loop thru p90
+    for(unsigned int i=0; i<rows; i++)
+    {
+        for(unsigned int j=0; j<cols; j++)
+        {
+            p90.at(i).at(j) = p.at(cols-j-1).at(i);
+        }
+    }
+    p = p90;
 }
 /**
  * @brief Rotate pgm 90 deg ccw. Can't just cw 3 times either
@@ -77,7 +73,20 @@ void pgm_cw(vector<IVec>& p)
  */
 void pgm_ccw(vector<IVec>& p)
 {
-
+    vector<IVec> p90;
+    int rows = p[0].size(), cols = p.size();
+    // reserve flipped space
+    p90.resize(rows);
+    for(IVec& r : p90) r.resize(cols);
+    // loop thru p90
+    for(unsigned int i=0; i<rows; i++)
+    {
+        for(unsigned int j=0; j<cols; j++)
+        {
+            p90.at(i).at(j) = p.at(j).at(rows-i-1);
+        }
+    }
+    p = p90;
 }
 /**
  * @brief adds w pixels around the border of p. All pixels will have value pv.
@@ -91,13 +100,16 @@ void pgm_pad(vector<IVec>& p, int w, int pv)
     // Adds padding on the left & right of image
     for(IVec& r : p)
     {
-        r.insert(r.begin(), pv, w);
-        r.insert(r.end(), pv, w);
+        r.insert(r.begin(), w, pv);
+        r.insert(r.end(), w, pv);
     }
     // Adds padding to top & bottom of image
     IVec r(p[0].size(), pv);
-    p.insert(p.begin(), r, w);
-    p.insert(p.end(), r, w);
+    for(int i=0; i<w; i++)
+    {
+        p.insert(p.begin(), r);
+        p.insert(p.end(), r);
+    }
 }
 /**
  * @brief Changes p so that it has r*c copies of PGM file, laid out in a r*c grid.
@@ -108,10 +120,28 @@ void pgm_pad(vector<IVec>& p, int w, int pv)
  */
 void pgm_panel(vector<IVec>& p, int r, int c)
 {
+    IVec::iterator row_beg;
+    vector<IVec>::iterator panel_row_beg;
+    int row_size = p[0].size(), col_size = p.size();
     // duplicates each row, so that we now have 1 row of panes.
-    for(IVec& row : p) r.insert(r.end(), row, c-1);
+    for(IVec& row : p)
+    {
+        row.reserve(row_size * c); // reserve is neccesary, iterators invalid if reallocation occurs
+        row_beg = row.begin(); // if used row.begin() inside loop, rows would double each time
+        for(int i=0; i<c-1; i++)
+        {
+            row.insert(row.end(), row_beg, row.end());
+            advance(row_beg, row_size);
+        }
+    }
     // Populate columns
-    p.insert(p.end(), p, r-1);
+    p.reserve(col_size * r);
+    panel_row_beg = p.begin();
+    for(int i=0; i<r-1; i++)
+    {
+        p.insert(p.end(), panel_row_beg, p.end());
+        advance(panel_row_beg, col_size);
+    }
 }
 /**
  * @brief Change p to a rectangular subset of the original picture, starting at row r,
@@ -124,7 +154,10 @@ void pgm_panel(vector<IVec>& p, int r, int c)
  */
 void pgm_crop(vector<IVec>& p, int r, int c, int rows, int cols)
 {
-
+    // starts at the top of the subplot, also playing with c++11 stuff
+    // crops left & right of desired subplot
+    for(int i=r; i<rows+r; i++) p[i].assign(p[i].begin()+c, p[i].end()-(p[i].size()-c-cols));
+    p.assign(p.begin()+r, p.end()-(p.size()-r-rows));
 }
 // DO NOT CHANGE ANYTHING BELOW THIS LINE
 
