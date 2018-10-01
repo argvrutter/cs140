@@ -73,7 +73,6 @@ void HashTable::Add_Hash(string &key, string &val)
         }
         while(true)
         {
-            tmp++;
             hk = (h1 + i*h2) % ts;
             if(keys[hk].empty()) break;
             i++;
@@ -86,7 +85,6 @@ void HashTable::Add_Hash(string &key, string &val)
         hk = Fxn ? XOR(key) : Last7(key);
         while(true)
         {
-            tmp++; // for total_probes
             if(keys[hk % ts].empty()) break;
             hk++;
         }
@@ -99,7 +97,39 @@ void HashTable::Add_Hash(string &key, string &val)
 
 string HashTable::Find(string &key)
 {
-
+    int hk, ts = keys.size(), i=0, h1, h2;
+    
+    if(Coll) // double hashing
+    {
+        // order of hash functions
+        h1 = Fxn ? XOR(key) : Last7(key);
+        h2 = Fxn ? Last7(key) : XOR(key);
+        // bad double hashing check
+        if(h2 % ts == 0)
+        {
+            // cerr << "Couldn't put " << key << " into the table" << endl;
+            h2 = 1;
+        }
+        while(true)
+        {
+            hk = (h1 + i*h2) % ts;
+            if(keys[hk].empty()) return "";
+            if(keys[hk] == key) return vals[hk];
+            i++;
+            tmp++;
+        }
+    }
+    else // Linear hashing
+    {
+        hk = Fxn ? XOR(key) : Last7(key);
+        while(true)
+        {
+            if(keys[hk % ts].empty()) return "";
+            if(keys[hk % ts] == key) return vals[hk % ts];
+            hk++;
+            tmp++;
+        }
+    }
 }
 
 void HashTable::Print()
@@ -116,5 +146,6 @@ void HashTable::Print()
 int HashTable::Total_Probes()
 {
 
+    return tmp;
 }
 
