@@ -1,5 +1,6 @@
 #include "hash140.h"
 #include <sstream>
+#include <cstdio>
 /**
  * Author: Aiden Rutter
  * CS140 Lab4: Hashing Stuff
@@ -67,7 +68,8 @@ void HashTable::Add_Hash(string &key, string &val)
         // bad double hashing check
         if(h2 % ts == 0)
         {
-            cerr << "Couldn't put " << key << " into the table" << endl;
+            // cerr << "Couldn't put " << key << " into the table" << endl;
+            h2 = 1;
         }
         while(true)
         {
@@ -102,7 +104,13 @@ string HashTable::Find(string &key)
 
 void HashTable::Print()
 {
-
+    for(int i=0; i<keys.size(); i++)
+    {
+        if(!(keys[i].empty()))
+        {
+            printf("%5d %s %s", i, keys[i], vals[i]);             
+        }
+    }
 }
 
 int HashTable::Total_Probes()
