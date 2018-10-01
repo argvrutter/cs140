@@ -2,4 +2,9 @@
 !*.cpp
 !*.h
 !*/
+!me.txt
+!*.py
+!Makefile
+!*.md
+!.gitignore
 
