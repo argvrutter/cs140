@@ -17,9 +17,9 @@ HashTable::HashTable(int table_size, string function, string collision)
     nkeys=0;
 }
 
-int XOR(string &key)
+unsigned int XOR(string &key)
 {
-    int i, hk, k;
+    unsigned int i, hk, k;
     vector<string> hkeys;
     istringstream sin;
     // splits key into substrings of length 7
@@ -39,10 +39,10 @@ int XOR(string &key)
     return hk;   
 }
 
-int Last7(string &key)
+unsigned int Last7(string &key)
 {
     string last7;
-    int h;
+    unsigned int h;
     if(key.size() > 7)
     {
         last7 = key.substr(key.size() - 7, 7);
@@ -134,7 +134,7 @@ string HashTable::Find(string &key)
 
 void HashTable::Print()
 {
-    for(int i=0; i<keys.size(); i++)
+    for(unsigned int i=0; i<keys.size(); i++)
     {
         if(!(keys[i].empty()))
         {
@@ -145,7 +145,11 @@ void HashTable::Print()
 
 int HashTable::Total_Probes()
 {
-
+    tmp =0;
+    for(unsigned int i=0; i<keys.size(); i++)
+    {
+        Find(keys[i]);   
+    }
     return tmp;
 }
 
