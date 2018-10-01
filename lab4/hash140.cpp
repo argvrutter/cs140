@@ -18,19 +18,19 @@ HashTable::HashTable(int table_size, string function, string collision)
 int XOR(string &key)
 {
     int i, hk, k;
-    vector<string> 7keys;
+    vector<string> hkeys;
     istringstream sin;
     // splits key into substrings of length 7
     for(i=0; i<key.size()-7; i+=7)
     {
-        7keys.push_back(key.substr(i, i+7));
+        hkeys.push_back(key.substr(i, i+7));
     }
-    7keys.push_back(key.substr(i, key.size() - i));
-    sin.str(7keys[0]);
+    hkeys.push_back(key.substr(i, key.size() - i));
+    sin.str(hkeys[0]);
     sin >> hex >> hk;
-    for(int j=1; j<7keys.size(); j++)
+    for(int j=1; j<hkeys.size(); j++)
     {
-        sin.str(7keys[i]);
+        sin.str(hkeys[i]);
         sin >> hex >> k;
         hk ^= k;
     }
