@@ -23,20 +23,25 @@ unsigned int XOR(string &key)
     vector<string> hkeys;
     istringstream sin;
     // splits key into substrings of length 7
-    for(i=0; i<key.size()-7; i+=7)
+    for(int i=0; i<key.size() / 7; i++)
     {
-        hkeys.push_back(key.substr(i, i+7));
+        hkeys.push_back(key.substr(i*7, 7));
     }
-    hkeys.push_back(key.substr(i, key.size() - i));
-    sin.str(hkeys[0]);
+    if(key.size() % 7 != 0)
+    {
+        hkeys.push_back(key.substr(7 * (key.size() / 7)));
+    }
+
+    sin.str(hkeys.at(0));
     sin >> hex >> hk;
     for(unsigned int j=1; j<hkeys.size(); j++)
     {
-        sin.str(hkeys[i]);
+        sin.clear();
+        sin.str(hkeys.at(j));
         sin >> hex >> k;
         hk ^= k;
     }
-    return hk;   
+    return hk;
 }
 
 unsigned int Last7(string &key)
@@ -58,12 +63,16 @@ unsigned int Last7(string &key)
 
 void HashTable::Add_Hash(string &key, string &val)
 {
+    // if double hash prime, guarenteed within ts probes
     int hi, hk, ts = keys.size(), i=0, h1, h2;
+    // check to see if table is full by searching whole thing
     if(nkeys >= ts) cerr << "Hash Table Full" << endl;
+    h1 = Fxn ? XOR(key) : Last7(key);
+
     if(Coll) // double hashing
     {
         // order of hash functions
-        h1 = Fxn ? XOR(key) : Last7(key);
+        // TODO: Don't calculate unless probe miss
         h2 = Fxn ? Last7(key) : XOR(key);
         // bad double hashing check
         if(h2 % ts == 0)
@@ -74,18 +83,18 @@ void HashTable::Add_Hash(string &key, string &val)
         while(true)
         {
             hk = (h1 + i*h2) % ts;
-            if(keys[hk].empty()) break;
+            if(keys.at(hk).empty()) break;
             i++;
         }
         hi = hk;
-        
+
     }
     else // Linear hashing
     {
-        hk = Fxn ? XOR(key) : Last7(key);
+        hk = h1;
         while(true)
         {
-            if(keys[hk % ts].empty()) break;
+            if(keys.at(hk % ts).empty()) break;
             hk++;
         }
         hi = hk % ts;
@@ -94,41 +103,44 @@ void HashTable::Add_Hash(string &key, string &val)
     vals[hi] = val;
     nkeys++;
 }
-
+// Broke :(
 string HashTable::Find(string &key)
 {
-    int hk, ts = keys.size(), i=0, h1, h2;
-    
+    unsigned long hk, ts = keys.size(), i=0, h1, h2;
+    if(key.empty()) return "";
     if(Coll) // double hashing
     {
         // order of hash functions
         h1 = Fxn ? XOR(key) : Last7(key);
+        // TODO: Don't calculate h2 unless probe miss
         h2 = Fxn ? Last7(key) : XOR(key);
         // bad double hashing check
         if(h2 % ts == 0)
         {
-            // cerr << "Couldn't put " << key << " into the table" << endl;
+            cerr << "Couldn't put " << key << " into the table" << endl;
             h2 = 1;
         }
-        while(true)
+        for(int j=0; j<ts; j++)
         {
             hk = (h1 + i*h2) % ts;
-            if(keys[hk].empty()) return "";
-            if(keys[hk] == key) return vals[hk];
+            if(keys.at(hk).empty()) return "";
+            if(keys.at(hk) == key) return vals.at(hk);
             i++;
             tmp++;
         }
+        return "";
     }
     else // Linear hashing
     {
         hk = Fxn ? XOR(key) : Last7(key);
-        while(true)
+        for(int j=0; j<ts; j++)
         {
-            if(keys[hk % ts].empty()) return "";
-            if(keys[hk % ts] == key) return vals[hk % ts];
+            if(keys.at(hk % ts).empty()) return "";
+            if(keys.at(hk % ts) == key) return vals.at(hk % ts);
             hk++;
             tmp++;
         }
+        return "";
     }
 }
 
@@ -136,9 +148,9 @@ void HashTable::Print()
 {
     for(unsigned int i=0; i<keys.size(); i++)
     {
-        if(!(keys[i].empty()))
+        if(!(keys.at(i).empty()))
         {
-            printf("%5d %s %s", i, keys[i], vals[i]);             
+            printf("%5d %s %s\n", i, keys.at(i).c_str(), vals.at(i).c_str());
         }
     }
 }
@@ -148,8 +160,7 @@ int HashTable::Total_Probes()
     tmp =0;
     for(unsigned int i=0; i<keys.size(); i++)
     {
-        Find(keys[i]);   
+        Find(keys.at(i));
     }
     return tmp;
 }
-
