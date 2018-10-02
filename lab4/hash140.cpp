@@ -111,36 +111,42 @@ void HashTable::Add_Hash(string &key, string &val)
 // Broke :(
 string HashTable::Find(string &key)
 {
-    unsigned long hk, ts = keys.size(), i=0, h1, h2;
+
+    unsigned int ts = keys.size(), i=1, h1, h2, hk, inc;
+    // check to see if table is full by searching whole thing
     if(key.empty()) return "";
-    if(Coll) // double hashing
+    h1 = Fxn ? XOR(key) : Last7(key);
+    if(!(keys.at(h1%ts).empty()))
     {
-        // order of hash functions
-        h1 = Fxn ? XOR(key) : Last7(key);
-        // TODO: Don't calculate h2 unless probe miss
-        h2 = Fxn ? Last7(key) : XOR(key);
-        // bad double hashing check
-        for(int j=0; j<ts; j++)
+        if(keys.at(h1%ts) == key) return vals.at(h1%ts);
+        if(Coll) // double hashing
         {
-            if(i*h2 % ts == 0) h2 = i;
-            hk = (h1 + i*h2) % ts;
-            if(keys.at(hk).empty()) return "";
-            if(keys.at(hk) == key) return vals.at(hk);
-            i++;
-            tmp++;
+            h2 = Fxn ? Last7(key) : XOR(key);
+            for(i=1; i<ts; i++)
+            {
+                tmp++;
+                if(i*h2 % ts == 0) h2 = 2;
+                hk = (h1 + i*h2)%ts;
+                if(keys.at(hk).empty()) return "";
+                if(keys.at(hk) == key) return vals.at(hk);
+            }
+            if(i >= ts) return "";
+            h1 = hk%ts;
         }
-        return "";
+        else // Linear hashing
+        {
+            for(int k=0; k<ts; k++)
+            {
+                h1++;
+                tmp++;
+                if(keys.at(h1 % ts).empty()) return "";
+                if(keys.at(h1%ts) == key) return vals.at(h1%ts);
+            }
+            return "";
+        }
     }
-    else // Linear hashing
+    else
     {
-        hk = Fxn ? XOR(key) : Last7(key);
-        for(int j=0; j<ts; j++)
-        {
-            if(keys.at(hk % ts).empty()) return "";
-            if(keys.at(hk % ts) == key) return vals.at(hk % ts);
-            hk++;
-            tmp++;
-        }
         return "";
     }
 }
@@ -161,8 +167,7 @@ int HashTable::Total_Probes()
     tmp =0;
     for(unsigned int i=0; i<keys.size(); i++)
     {
-        // if(!(keys.at(i).empty())) Find(keys.at(i));
-        Find(keys.at(i));
+        if(!(keys.at(i).empty())) Find(keys.at(i));
     }
     return tmp;
 }
