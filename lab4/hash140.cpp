@@ -64,43 +64,48 @@ unsigned int Last7(string &key)
 void HashTable::Add_Hash(string &key, string &val)
 {
     // if double hash prime, guarenteed within ts probes
-    int hi, hk, ts = keys.size(), i=0, h1, h2;
+    unsigned int ts = keys.size(), i=1, h1, h2, hk, inc;
     // check to see if table is full by searching whole thing
-    if(nkeys >= ts) cerr << "Hash Table Full" << endl;
+    if(nkeys >= ts)
+    {
+        cerr << "Hash Table Full" << endl;
+        return;
+    }
     h1 = Fxn ? XOR(key) : Last7(key);
-
-    if(Coll) // double hashing
+    if(!(keys.at(h1%ts).empty()))
     {
-        // order of hash functions
-        // TODO: Don't calculate unless probe miss
-        h2 = Fxn ? Last7(key) : XOR(key);
-        // bad double hashing check
-        if(h2 % ts == 0)
+        if(Coll) // double hashing
         {
-            // cerr << "Couldn't put " << key << " into the table" << endl;
-            h2 = 1;
+            h2 = Fxn ? Last7(key) : XOR(key);
+            for(i=1; i<ts; i++)
+            {
+                if(i*h2 % ts == 0) h2 = i;
+                hk = (h1 + i*h2)%ts;
+                if(keys.at(hk).empty()) break;
+            }
+            if(i >= ts)
+            {
+                cerr << "Couldn't put " << key << " into the table" << endl;
+                return;
+            }
+            h1 = hk%ts;
         }
-        while(true)
+        else // Linear hashing
         {
-            hk = (h1 + i*h2) % ts;
-            if(keys.at(hk).empty()) break;
-            i++;
+            while(true)
+            {
+                if(keys.at(h1 % ts).empty()) break;
+                h1++;
+            }
+            h1 %= ts;
         }
-        hi = hk;
-
     }
-    else // Linear hashing
+    else
     {
-        hk = h1;
-        while(true)
-        {
-            if(keys.at(hk % ts).empty()) break;
-            hk++;
-        }
-        hi = hk % ts;
+        h1 %= ts;
     }
-    keys[hi] = key;
-    vals[hi] = val;
+    keys[h1] = key;
+    vals[h1] = val;
     nkeys++;
 }
 // Broke :(
@@ -115,13 +120,9 @@ string HashTable::Find(string &key)
         // TODO: Don't calculate h2 unless probe miss
         h2 = Fxn ? Last7(key) : XOR(key);
         // bad double hashing check
-        if(h2 % ts == 0)
-        {
-            cerr << "Couldn't put " << key << " into the table" << endl;
-            h2 = 1;
-        }
         for(int j=0; j<ts; j++)
         {
+            if(i*h2 % ts == 0) h2 = i;
             hk = (h1 + i*h2) % ts;
             if(keys.at(hk).empty()) return "";
             if(keys.at(hk) == key) return vals.at(hk);
@@ -160,6 +161,7 @@ int HashTable::Total_Probes()
     tmp =0;
     for(unsigned int i=0; i<keys.size(); i++)
     {
+        // if(!(keys.at(i).empty())) Find(keys.at(i));
         Find(keys.at(i));
     }
     return tmp;
