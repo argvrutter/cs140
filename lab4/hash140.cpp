@@ -77,13 +77,14 @@ void HashTable::Add_Hash(string &key, string &val)
         if(Coll) // double hashing
         {
             h2 = Fxn ? Last7(key) : XOR(key);
+            if(h2%ts == 0) h2 = 1;
             for(i=1; i<ts; i++)
             {
-                if(i*h2 % ts == 0) h2 = i;
-                hk = (h1 + i*h2)%ts;
+                //if(i*h2 % ts == 0) h2 = 1;
+                hk = (h1 + (i*h2)%ts)%ts;
                 if(keys.at(hk).empty()) break;
             }
-            if(i >= ts)
+            if(!(keys.at(hk).empty()))
             {
                 cerr << "Couldn't put " << key << " into the table" << endl;
                 return;
@@ -122,11 +123,12 @@ string HashTable::Find(string &key)
         if(Coll) // double hashing
         {
             h2 = Fxn ? Last7(key) : XOR(key);
+            if(h2%ts == 0) h2 = 1;
             for(i=1; i<ts; i++)
             {
                 tmp++;
-                if(i*h2 % ts == 0) h2 = 2;
-                hk = (h1 + i*h2)%ts;
+                //if(i*h2 % ts == 0) h2 = 1;
+                hk = (h1 + (i*h2)%ts)%ts;
                 if(keys.at(hk).empty()) return "";
                 if(keys.at(hk) == key) return vals.at(hk);
             }
