@@ -56,34 +56,43 @@ int Bitmatrix::Cols()
  * '0' and '1', then you need to convert it to '0' or '1'. You can do
  * so by adding '0' to val. If row or col are bad, simply do nothing 
  * -- your code should not be erroneous if given bad values.
- * @param row [description]
- * @param col [description]
- * @param val [description]
+ * @param row row index (zero indexed)
+ * @param col column index
+ * @param val value to set, should be 0,1 or '0','1'
  */
 void Bitmatrix::Set(int row, int col, char val)
 {
   // if row or col are bad, do nothing
-  if(row <= 0 || col <= 0 || row >= Rows() || col >= Cols()) return;
+  if(row < 0 || col < 0 || row >= Rows() || col >= Cols()) return;
   // val can be 0,1 or '0','1'
   if(val == 0 || val == 1) val+='0';
   if(val == '0' || val == '1') M[row][col] = val;  
 }
 /**
- * [Bitmatrix::Val description]
- * @param  row [description]
- * @param  col [description]
- * @return     [description]
+ * Return the specified value -- '0' should be returned as the integer 
+ * 0 and '1' should be returned as the integer 1. Even though Val returns
+ * a char, you can have your return statement return the integer 0 or 
+ * the integer 1 and it will work properly. This also means that when 
+ * you use Val to retrieve a value from a matrix, and you want to store 
+ * its return value back into another matrix (e.g., the Copy method will 
+ * need to do this), you will need to first convert the return value to 
+ * the character '0' or '1'. You can do this by adding '0' to the return 
+ * value. Val() should return -1 if given bad input.
+ * @param  row zero indexed row
+ * @param  col zero indexed column
+ * @return     integer 0, 1, or -1, if char desired add +'0' when calling
  */
 char Bitmatrix::Val(int row, int col)
 {
-  return -1;
+  if(row < 0 || col < 0 || row >= Rows() || col >= Cols()) return -1;
+  return M[row][col]-'0';
 }
 /**
  *  Print the matrix on standard output. If w is less than or equal to zero,
  *  print each row on its own line with no spaces. Otherwise, print a space
  *  after every w columns and a blank line after every w rows. I've written
  *  this one for you.
- * @param w [description]
+ * @param w width
  */
 void Bitmatrix::Print(int w)
 {
@@ -105,10 +114,13 @@ void Bitmatrix::Print(int w)
 /**
  *  Write the bit-matrix to a file. Here, just write out the zeros and
  *  ones with no spaces. Each row of the bit-matrix gets one row of output.
- * @param fn [description]
+ * @param fn the file name
  */
 void Bitmatrix::Write(string fn)
 {
+  ofstream fout;
+  fout.open(fn);
+  for(string& row : M) fout << row << endl;
 }
 /**
  * [Bitmatrix::Swap_Rows description]
