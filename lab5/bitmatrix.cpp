@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <algorithm>
 #include "bitmatrix.h"
-#include "pgm.h"
 /**
  * Author: Aiden Rutter
  * CS140 Lab5
@@ -253,32 +252,48 @@ Bitmatrix *Bitmatrix::Copy()
   return copy;
 }
 /**
- * [BM_Hash::BM_Hash description]
- * @param size [description]
+ * Notes for BM_HASH:
+ * You should not call new or delete on bit-matrices when you implement 
+ * any of the hash table methods. You should call new when you create a 
+ * new HTE. That is the only time that you will call new in the hash 
+ * table methods.
+ */
+
+/**
+ * The constructor specifies the size of the table.
+ * @param size size of the table
  */
 BM_Hash::BM_Hash(int size)
 {
+
 }
 /**
- * [BM_Hash::Store description]
- * @param key [description]
- * @param bm  [description]
+ * Store the given key and bit-matrix in the hash table. If the key is
+ * already there, replace the bit-matrix with the given one.
+ * @param key string hash key
+ * @param bm  Bitmatrix to store
  */
 void BM_Hash::Store(string &key, Bitmatrix *bm)
 {
+
 }
 /**
- * [BM_Hash::Recall description]
- * @param  key [description]
- * @return     [description]
+ * return the bit-matrix corresponding to the given key. If the key is 
+ * not in the hash table, then return NULL.
+ * @param  key string hash key
+ * @return     Corresponding bit matrix or NULL if n/a
  */
 Bitmatrix *BM_Hash::Recall(string &key)
 {
   return NULL;
 }
 /**
- * [BM_Hash::All description]
- * @return [description]
+ * Return a vector of all hash table entries in the table. The vector 
+ * should be ordered just like the hash table. In other words, suppose 
+ * "A" hashes to 5, "B" hashes to 1 and "C" hashes to 1. And suppose 
+ * that "B" was added to the table before "C". Then All() should return 
+ * the HTE's in the order "B", "C", "A".
+ * @return vector of all hash table entries in the table
  */
 HTVec BM_Hash::All()
 {
@@ -287,39 +302,47 @@ HTVec BM_Hash::All()
 }
 
 /**
- * [Sum description]
- * @param  m1 [description]
- * @param  m2 [description]
- * @return    [description]
+ * This creates a new bit-matrix which is the sum of a1 and a2. If a1 
+ * and a2 are not the same size, return NULL.
+ * @param  m1 bitmatrix 1 pointer
+ * @param  m2 bitmatrix 2 pointer
+ * @return    Bitmatrix pointer that is the sum of a1 and a2
  */
 Bitmatrix *Sum(Bitmatrix *m1, Bitmatrix *m2)
 {
   return NULL;
 }
 /**
- * [Product description]
- * @param  m1 [description]
- * @param  m2 [description]
- * @return    [description]
+ * This creates a new bit-matrix which is the product of a1 and a2. 
+ * This product will have a1->Rows() rows and a2->Cols() columns. If 
+ * a1->Cols() and a2->Rows() do not match, then return NULL.
+ * @param  m1 bitmatrix 1 pointer
+ * @param  m2 bitmatrix 2 pointer
+ * @return   bitmatrix pointer that is the product of m2 and m2
  */
 Bitmatrix *Product(Bitmatrix *m1, Bitmatrix *m2)
 {
   return NULL;
 }
 /**
- * [Sub_Matrix description]
- * @param  m    [description]
- * @param  rows [description]
- * @return      [description]
+ * This creates a new bit-matrix composed of the specified rows of the 
+ * given bit-matrix. It is ok to repeat entries in rows. However, if 
+ * rows is empty or contains bad indices, return NULL.
+ * @param  m    bitmatrix pointer
+ * @param  rows vector of indices of rows to keep
+ * @return      subsection of m, unless empty or bad indices.
  */
 Bitmatrix *Sub_Matrix(Bitmatrix *m, vector <int> &rows)
 {
   return NULL;
 }
 /**
- * [Inverse description]
- * @param  m [description]
- * @return   [description]
+ * Create and return the inverse of a1. To do this, you should also use 
+ * the Swap_Rows() and R1_Plus_Equals_R2() methods. I'll go into more 
+ * detail on how to invert a bit-matrix below. If a1 is not square or 
+ * not invertible, return NULL.
+ * @param  m bitmatrix pointer
+ * @return   inverted bitmatrix or null if there's an issue
  */
 Bitmatrix *Inverse(Bitmatrix *m)
 {
