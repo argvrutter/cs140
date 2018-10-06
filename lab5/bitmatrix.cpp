@@ -8,34 +8,65 @@
  * Author: Aiden Rutter
  * CS140 Lab5
  * Description: implement bitmatrix.h
+ * For week 1, cases 1-28 and 101-120 must work
+ * Implement all methods in BM_Hash and Bitmatrix by partial deadline
+ */
+/**
+ * Create a bitmatrix of the specified size whose entries are all zeros.
+ * If rows or cols is less than or equal to zero, print an error message,
+ * but still create a 1 X 1 bit-matrix whose entry is zero.
+ * @param rows # of rows
+ * @param cols # of columns
  */
 Bitmatrix::Bitmatrix(int rows, int cols)
 {
+  if(rows <= 0 || cols <= 0)
+  {
+    cerr << "Rows or columns less than 0" << endl;
+    M.resize(1, "0");
+  }
+  else
+  {
+    M.resize(rows);
+    for(string& row : M) row.resize(cols, '0');
+  }
 }
 /**
  * Accessor, returns size of row
- * @return [description]
+ * @return # of rows
  */
 int Bitmatrix::Rows()
 {
-  return rows;
+  return M.size();
 }
 /**
- * [Bitmatrix::Cols description]
- * @return [description]
+ * Return the number of columns in the bit-matrix.
+ * @return # of columns
  */
 int Bitmatrix::Cols()
 {
-  return 0;
+  return M[0].size();
 }
 /**
- * [Bitmatrix::Set description]
+ * Set the element in the specified row and column (zero-indexed, 
+ * of course) to the given value. Val can be either 0 or '0' to specify 
+ * zero, and either 1 or '1' to specify one. The character your program 
+ * actually stores should be a '0' or a '1'. Hence if val is either the 
+ * integer 0 or 1, as opposed to the integer 48 or 49, which represent 
+ * '0' and '1', then you need to convert it to '0' or '1'. You can do
+ * so by adding '0' to val. If row or col are bad, simply do nothing 
+ * -- your code should not be erroneous if given bad values.
  * @param row [description]
  * @param col [description]
  * @param val [description]
  */
 void Bitmatrix::Set(int row, int col, char val)
 {
+  // if row or col are bad, do nothing
+  if(row <= 0 || col <= 0 || row >= Rows() || col >= Cols()) return;
+  // val can be 0,1 or '0','1'
+  if(val == 0 || val == 1) val+='0';
+  if(val == '0' || val == '1') M[row][col] = val;  
 }
 /**
  * [Bitmatrix::Val description]
@@ -48,7 +79,10 @@ char Bitmatrix::Val(int row, int col)
   return -1;
 }
 /**
- * [Bitmatrix::Print description]
+ *  Print the matrix on standard output. If w is less than or equal to zero,
+ *  print each row on its own line with no spaces. Otherwise, print a space
+ *  after every w columns and a blank line after every w rows. I've written
+ *  this one for you.
  * @param w [description]
  */
 void Bitmatrix::Print(int w)
@@ -69,7 +103,8 @@ void Bitmatrix::Print(int w)
   }
 }
 /**
- * [Bitmatrix::Write description]
+ *  Write the bit-matrix to a file. Here, just write out the zeros and
+ *  ones with no spaces. Each row of the bit-matrix gets one row of output.
  * @param fn [description]
  */
 void Bitmatrix::Write(string fn)
@@ -92,7 +127,10 @@ void Bitmatrix::R1_Plus_Equals_R2(int r1, int r2)
 {
 }
 /**
- * [Bitmatrix::Bitmatrix description]
+ * Read a bit-matrix from a file. The file should contain only zeros, ones,
+ * spaces and newlines, and each line should either be blank, or it should
+ * contain the same number of non-spaces as all other lines. I've written
+ * this one for you, so you don't need to sweat about it too much.
  * @param fn [description]
  */
 Bitmatrix::Bitmatrix(string fn)
@@ -127,7 +165,11 @@ Bitmatrix::Bitmatrix(string fn)
   f.close();
 }
 /**
- * [Bitmatrix::PGM description]
+ * Create a PGM file from the bit-matrix. This is how I made the pictures above.
+ * The zero entries are white (255) and the one entries are gray (100).
+ * Each entry is a pixels by pixels square. If border is greater than zero,
+ * then there should be a black border of that many pixels separating each
+ * square and around the whole matrix.
  * @param fn     [description]
  * @param pixels [description]
  * @param border [description]
