@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <algorithm>
 #include "bitmatrix.h"
+#include "pgm.h"
 /**
  * Author: Aiden Rutter
  * CS140 Lab5
@@ -120,30 +121,37 @@ void Bitmatrix::Write(string fn)
 {
   ofstream fout;
   fout.open(fn);
-  for(string& row : M) fout << row << endl;
+  for(const string& row : M) fout << row << endl;
+  fout.close();
 }
 /**
- * [Bitmatrix::Swap_Rows description]
- * @param r1 [description]
- * @param r2 [description]
+ * Swap the specified rows. This should do nothing if given bad values.
+ * @param r1 zero index of row 1
+ * @param r2 zero index of row 2
  */
 void Bitmatrix::Swap_Rows(int r1, int r2)
 {
+  if(r1 < 0 || r1 >= Rows() || r2 < 0 || r2 >= Rows()) return;
+  M[r1].swap(M[r2]);
 }
 /**
- * [Bitmatrix::R1_Plus_Equals_R2 description]
- * @param r1 [description]
- * @param r2 [description]
+ * Set row r1 to be the sum of rows r1 and r2. Again, this should do 
+ * nothing if given bad values. It's ok for r2 to equal r1. Sum is binary
+ * addition w/ carry discarded?
+ * @param r1 zero index of row 1
+ * @param r2 zero index of row 2
  */
 void Bitmatrix::R1_Plus_Equals_R2(int r1, int r2)
 {
+  if(r1 < 0 || r1 >= Rows() || r2 < 0 || r2 >= Rows()) return;
+  for(int i=0; i<Cols(); i++) Set(r1, i, ((Val(r1,i) + Val(r2,i))%2)+'0');
 }
 /**
  * Read a bit-matrix from a file. The file should contain only zeros, ones,
  * spaces and newlines, and each line should either be blank, or it should
  * contain the same number of non-spaces as all other lines. I've written
  * this one for you, so you don't need to sweat about it too much.
- * @param fn [description]
+ * @param fn filename
  */
 Bitmatrix::Bitmatrix(string fn)
 {
@@ -182,12 +190,31 @@ Bitmatrix::Bitmatrix(string fn)
  * Each entry is a pixels by pixels square. If border is greater than zero,
  * then there should be a black border of that many pixels separating each
  * square and around the whole matrix.
- * @param fn     [description]
- * @param pixels [description]
- * @param border [description]
+ * @param fn     filename
+ * @param pixels Length of a square representing 1 pixel
+ * @param border black border of border pixels
  */
 void Bitmatrix::PGM(string fn, int pixels, int border)
 {
+  if(border < 0) border = 0;
+  vector<vector<int> > pgm;
+  int pgm_rows = Rows() * pixels + (border * Rows()+1);
+  int pgm_cols = Cols() * pixels + (border * Rows()+1);
+  FILE* fout;
+
+  fprintf(fout, "P2\n%d %d\n255\n", pgm_cols, pgm_rows);
+
+  for(const string& row : M)
+  {
+    for(int i=0; i<border; i++)
+      for(int j=0; j<pgm_cols; j++) fprintf(fout, "255 ");
+    fprintf(fout, "\n");
+    for(const char p : row)
+    {
+      for(unsigned int )
+    }
+    printf("\n");
+  }
 }
 /**
  * [Bitmatrix::Copy description]
