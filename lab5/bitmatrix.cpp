@@ -258,6 +258,18 @@ Bitmatrix *Bitmatrix::Copy()
  * new HTE. That is the only time that you will call new in the hash 
  * table methods.
  */
+unsigned int djb_hash(string &s)
+{
+  int i;
+  unsigned int h;
+  
+  h = 5381;
+
+  for (i = 0; i < s.size(); i++) {
+    h = (h << 5) + h + s[i];
+  }
+  return h;
+}
 
 /**
  * The constructor specifies the size of the table.
@@ -265,7 +277,7 @@ Bitmatrix *Bitmatrix::Copy()
  */
 BM_Hash::BM_Hash(int size)
 {
-
+  table.resize(size);
 }
 /**
  * Store the given key and bit-matrix in the hash table. If the key is
@@ -275,7 +287,18 @@ BM_Hash::BM_Hash(int size)
  */
 void BM_Hash::Store(string &key, Bitmatrix *bm)
 {
-
+  int hi = djb_hash(key)%table.size();
+  HTE* table_entry = new HTE;
+  HTVec questionable_pointer_usage; 
+  table_entry->bm = bm;
+  table_entry->key = key;
+  questionable_pointer_usage.push_back(table_entry);
+  if(table[hi].empty()) table[hi] = questionable_pointer_usage;
+  else if(table[hi][0]->key == key)
+  {
+    table[hi][0]->bm = bm;
+    delete table_entry;
+  }
 }
 /**
  * return the bit-matrix corresponding to the given key. If the key is 
@@ -285,7 +308,9 @@ void BM_Hash::Store(string &key, Bitmatrix *bm)
  */
 Bitmatrix *BM_Hash::Recall(string &key)
 {
-  return NULL;
+  int hi = djb_hash(key)%table.size();
+  if(table[hi].empty()) return NULL;
+  else return table[hi][0]->bm;
 }
 /**
  * Return a vector of all hash table entries in the table. The vector 
@@ -298,6 +323,7 @@ Bitmatrix *BM_Hash::Recall(string &key)
 HTVec BM_Hash::All()
 {
   HTVec rv;
+  for(auto entry : table) rv.push_back(entry[0]);
   return rv;
 }
 
@@ -348,3 +374,4 @@ Bitmatrix *Inverse(Bitmatrix *m)
 {
   return NULL;
 }
+ss
