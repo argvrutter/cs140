@@ -374,4 +374,3 @@ Bitmatrix *Inverse(Bitmatrix *m)
 {
   return NULL;
 }
-ss
