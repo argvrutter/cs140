@@ -199,21 +199,41 @@ void Bitmatrix::PGM(string fn, int pixels, int border)
   if(border < 0) border = 0;
   vector<vector<int> > pgm;
   int pgm_rows = Rows() * pixels + (border * Rows()+1);
-  int pgm_cols = Cols() * pixels + (border * Rows()+1);
+  int pgm_cols = Cols() * pixels + (border * Cols()+1);
   FILE* fout;
+  int color;
 
   fprintf(fout, "P2\n%d %d\n255\n", pgm_cols, pgm_rows);
-
+  // iteration represents a row
   for(const string& row : M)
   {
+    // does border at tops of rows
     for(int i=0; i<border; i++)
-      for(int j=0; j<pgm_cols; j++) fprintf(fout, "255 ");
-    fprintf(fout, "\n");
-    for(const char p : row)
     {
-      for(unsigned int )
+      for(int j=0; j<pgm_cols; j++) fprintf(fout, "%4d", 0);
+      fprintf(fout, "\n");
     }
-    printf("\n");
+    // completes a bitmatrix row
+    for(int j=0; j<pixels; j++)
+    {
+      for(const char p : row) // completes pgm row
+      {
+        // set color
+        color = (p == '1') ? 100 : 255;
+        //vertical borders
+        for(int i=0; i<border; i++) fprintf(fout, "%4d", 0);
+        for(int i=0; i<pixels; i++) fprintf(fout, "%4d", color);
+      }
+      // add vertical border to the end
+      for(int i=0; i<border; i++) fprintf(fout, "%4d", 0);
+      fprintf(fout, "\n");
+    }
+    // Adds border to the end
+    for(int i=0; i<border; i++)
+    {
+      for(int j=0; j<pgm_cols; j++) fprintf(fout, "%4d", 0);
+      fprintf(fout, "\n");
+    }
   }
 }
 /**
