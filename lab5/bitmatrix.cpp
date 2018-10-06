@@ -237,12 +237,20 @@ void Bitmatrix::PGM(string fn, int pixels, int border)
   }
 }
 /**
- * [Bitmatrix::Copy description]
- * @return [description]
+ * Create a new bit-matrix that is a copy of the given bit-matrix and 
+ * return a pointer to it. To do this, you'll have to create a new 
+ * empty bit-matrix of the proper size, and then use Set() to set its 
+ * elements properly.
+ * @return Pointer to a new copy of the bitmatrix.
  */
 Bitmatrix *Bitmatrix::Copy()
 {
-  return NULL;
+  Bitmatrix* copy = new Bitmatrix(Rows(), Cols());
+  for(unsigned int i=0; i<Rows(); i++)
+    for(unsigned int j=0; j<Cols(); j++)
+      copy->Set(i, j, M[i][j]);
+
+  return copy;
 }
 /**
  * [BM_Hash::BM_Hash description]
