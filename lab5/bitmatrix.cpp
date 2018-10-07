@@ -197,9 +197,9 @@ void Bitmatrix::PGM(string fn, int pixels, int border)
 {
   if(border < 0) border = 0;
   vector<vector<int> > pgm;
-  int pgm_rows = Rows() * pixels + (border * Rows()+1);
-  int pgm_cols = Cols() * pixels + (border * Cols()+1);
-  FILE* fout;
+  int pgm_rows = Rows() * pixels + border * (Rows()+1);
+  int pgm_cols = Cols() * pixels + border * (Cols()+1);
+  FILE* fout = fopen(fn.c_str(), "w");;
   int color;
 
   fprintf(fout, "P2\n%d %d\n255\n", pgm_cols, pgm_rows);
@@ -224,16 +224,17 @@ void Bitmatrix::PGM(string fn, int pixels, int border)
         for(int i=0; i<pixels; i++) fprintf(fout, "%4d", color);
       }
       // add vertical border to the end
-      for(int i=0; i<border; i++) fprintf(fout, "%4d", 0);
-      fprintf(fout, "\n");
-    }
-    // Adds border to the end
-    for(int i=0; i<border; i++)
-    {
-      for(int j=0; j<pgm_cols; j++) fprintf(fout, "%4d", 0);
+      for(int i=0; i<border; i++) fprintf(fout, "%4ld", 0);
       fprintf(fout, "\n");
     }
   }
+  // Adds border to the end
+  for(int i=0; i<border; i++)
+  {
+    for(int j=0; j<pgm_cols; j++) fprintf(fout, "%4d", 0);
+    fprintf(fout, "\n");
+  }
+  fclose(fout);
 }
 /**
  * Create a new bit-matrix that is a copy of the given bit-matrix and 
@@ -323,7 +324,10 @@ Bitmatrix *BM_Hash::Recall(string &key)
 HTVec BM_Hash::All()
 {
   HTVec rv;
-  for(auto entry : table) rv.push_back(entry[0]);
+  for(auto entry : table)
+  {
+    if(!(entry.empty())) rv.push_back(entry[0]);
+  }
   return rv;
 }
 
