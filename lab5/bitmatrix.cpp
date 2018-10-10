@@ -383,8 +383,14 @@ Bitmatrix *Sub_Matrix(Bitmatrix *m, vector <int> &rows)
   for(int row : rows)
     if((row < 0) || (row >= m->Rows()))
       return NULL;
-  
-  m->
+  int i=0;
+  Bitmatrix *res = new Bitmatrix(rows.size(), m->Cols());
+  for(int row : rows) {
+    for(int j=0; j<m->Cols(); j++) {
+      res->Set(i, j, m->Val(row, j));
+    }
+    i++;
+  }
 }
 /**
  * Create and return the inverse of a1. To do this, you should also use 
@@ -396,5 +402,7 @@ Bitmatrix *Sub_Matrix(Bitmatrix *m, vector <int> &rows)
  */
 Bitmatrix *Inverse(Bitmatrix *m)
 {
+  // not square or not invertible
+  // identity matrix: only one 1 in each row
   return NULL;
 }
