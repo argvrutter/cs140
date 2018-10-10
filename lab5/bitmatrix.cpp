@@ -340,7 +340,15 @@ HTVec BM_Hash::All()
  */
 Bitmatrix *Sum(Bitmatrix *m1, Bitmatrix *m2)
 {
-  return NULL;
+  // check if m1 and m2 are the same size, assumes pointers are not null
+  if((m1->Rows() != m2->Rows()) || (m1->Cols() != m2->Rows())) return NULL;
+
+  Bitmatrix* res = new Bitmatrix(m1->Rows(), m1->Cols());
+  for(int j=0; j<res->Rows(); j++)
+    for(int i=0; i<res->Cols(); i++) 
+      res->Set(j, i, ((m1->Val(j,i) + m2->Val(j,i))%2)+'0');
+  
+  return res;
 }
 /**
  * This creates a new bit-matrix which is the product of a1 and a2. 
@@ -352,7 +360,14 @@ Bitmatrix *Sum(Bitmatrix *m1, Bitmatrix *m2)
  */
 Bitmatrix *Product(Bitmatrix *m1, Bitmatrix *m2)
 {
-  return NULL;
+  if(m1->Cols() != m2->Rows()) return NULL;
+  Bitmatrix* res = new Bitmatrix(m1->Rows(), m2->Cols());
+  // matrix multiply is each row of m1 multiplied by every col of m2
+  for(int i=0; i<m1->Rows(); i++)
+    for(int j=0; j<m2->Cols(); j++)
+      res->Set(i, j, ((m1->Val(j,i) + m2->Val(j,i))%2)+'0');
+
+  return res;
 }
 /**
  * This creates a new bit-matrix composed of the specified rows of the 
@@ -364,7 +379,12 @@ Bitmatrix *Product(Bitmatrix *m1, Bitmatrix *m2)
  */
 Bitmatrix *Sub_Matrix(Bitmatrix *m, vector <int> &rows)
 {
-  return NULL;
+  if(rows.empty()) return NULL;
+  for(int row : rows)
+    if((row < 0) || (row >= m->Rows()))
+      return NULL;
+  
+  m->
 }
 /**
  * Create and return the inverse of a1. To do this, you should also use 
