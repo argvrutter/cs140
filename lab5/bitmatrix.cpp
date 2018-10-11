@@ -143,7 +143,7 @@ void Bitmatrix::Swap_Rows(int r1, int r2)
 void Bitmatrix::R1_Plus_Equals_R2(int r1, int r2)
 {
   if(r1 < 0 || r1 >= Rows() || r2 < 0 || r2 >= Rows()) return;
-  for(int i=0; i<Cols(); i++) Set(r1, i, ((Val(r1,i) + Val(r2,i))%2)+'0');
+  for(int i=0; i<Cols(); i++) Set(r1, i, ((Val(r1,i) ^ Val(r2,i))%2)+'0');
 }
 /**
  * Read a bit-matrix from a file. The file should contain only zeros, ones,
@@ -289,17 +289,18 @@ BM_Hash::BM_Hash(int size)
 void BM_Hash::Store(string &key, Bitmatrix *bm)
 {
   int hi = djb_hash(key)%table.size();
+  // check if key already in bucket
+  for(auto &entry : table[hi]) {
+    if(entry->key == key) {
+      entry->bm = bm;
+      return;
+    }
+  }
   HTE* table_entry = new HTE;
-  HTVec questionable_pointer_usage; 
   table_entry->bm = bm;
   table_entry->key = key;
-  questionable_pointer_usage.push_back(table_entry);
-  if(table[hi].empty()) table[hi] = questionable_pointer_usage;
-  else if(table[hi][0]->key == key)
-  {
-    table[hi][0]->bm = bm;
-    delete table_entry;
-  }
+  // append table entry to bucket
+  table[hi].push_back(table_entry);
 }
 /**
  * return the bit-matrix corresponding to the given key. If the key is 
@@ -309,9 +310,18 @@ void BM_Hash::Store(string &key, Bitmatrix *bm)
  */
 Bitmatrix *BM_Hash::Recall(string &key)
 {
-  int hi = djb_hash(key)%table.size();
-  if(table[hi].empty()) return NULL;
-  else return table[hi][0]->bm;
+  unsigned int hi = djb_hash(key)%table.size();
+  if(table[hi].empty()) {
+    return NULL;
+  }
+  else {
+    for(auto entry : table[hi]) {
+      if(entry->key == key) {
+        return entry->bm;
+      }
+    }
+  }
+  return NULL;
 }
 /**
  * Return a vector of all hash table entries in the table. The vector 
@@ -324,9 +334,13 @@ Bitmatrix *BM_Hash::Recall(string &key)
 HTVec BM_Hash::All()
 {
   HTVec rv;
-  for(auto entry : table)
+  for(auto& bucket : table)
   {
-    if(!(entry.empty())) rv.push_back(entry[0]);
+    if(!(bucket.empty())) {
+      for(auto& entry : bucket) {
+        rv.push_back(entry);
+      }
+    }
   }
   return rv;
 }
@@ -341,12 +355,12 @@ HTVec BM_Hash::All()
 Bitmatrix *Sum(Bitmatrix *m1, Bitmatrix *m2)
 {
   // check if m1 and m2 are the same size, assumes pointers are not null
-  if((m1->Rows() != m2->Rows()) || (m1->Cols() != m2->Rows())) return NULL;
+  if((m1->Rows() != m2->Rows()) || (m1->Cols() != m2->Cols())) return NULL;
 
   Bitmatrix* res = new Bitmatrix(m1->Rows(), m1->Cols());
   for(int j=0; j<res->Rows(); j++)
     for(int i=0; i<res->Cols(); i++) 
-      res->Set(j, i, ((m1->Val(j,i) + m2->Val(j,i))%2)+'0');
+      res->Set(j, i, ((m1->Val(j,i) ^ m2->Val(j,i))%2)+'0');
   
   return res;
 }
@@ -362,11 +376,17 @@ Bitmatrix *Product(Bitmatrix *m1, Bitmatrix *m2)
 {
   if(m1->Cols() != m2->Rows()) return NULL;
   Bitmatrix* res = new Bitmatrix(m1->Rows(), m2->Cols());
+  char temp;
   // matrix multiply is each row of m1 multiplied by every col of m2
-  for(int i=0; i<m1->Rows(); i++)
-    for(int j=0; j<m2->Cols(); j++)
-      res->Set(i, j, ((m1->Val(j,i) + m2->Val(j,i))%2)+'0');
-
+  for(int i=0; i<m1->Rows(); i++) {
+    for(int j=0; j<m2->Cols(); j++) {
+      temp=0;
+      for(int k=0; k<m1->Cols(); k++) {
+        temp ^= m1->Val(i, k) & m2->Val(k, j);
+      }
+      res->Set(i, j, temp+'0');
+    }
+  }
   return res;
 }
 /**
@@ -391,6 +411,7 @@ Bitmatrix *Sub_Matrix(Bitmatrix *m, vector <int> &rows)
     }
     i++;
   }
+  return res;
 }
 /**
  * Create and return the inverse of a1. To do this, you should also use 
