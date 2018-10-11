@@ -423,7 +423,54 @@ Bitmatrix *Sub_Matrix(Bitmatrix *m, vector <int> &rows)
  */
 Bitmatrix *Inverse(Bitmatrix *m)
 {
-  // not square or not invertible
-  // identity matrix: only one 1 in each row
-  return NULL;
+  // check if not square or not invertible
+  // Gaussian elimination
+  if((m->Rows() <= 0) || (m->Cols()<=0)) return NULL;
+  if(m->Rows() != m->Cols()) return NULL;
+  Bitmatrix* inv = new Bitmatrix(m->Rows(), m->Cols());
+  int j;
+  // create identity matrix
+  for(int i=0; i<inv->Rows(); i++) inv->Set(i, i, '1');
+  // row echelon 
+  for(int i=0; i<m->Rows(); i++)
+  {
+    if(m->Val(i,i) != 1)
+    {
+      // search for a row to swap
+      for(j=i+1; j<m->Rows(); j++)
+      {
+        if(m->Val(j, i) == 1)
+        {
+          m->Swap_Rows(i, j);
+          inv->Swap_Rows(i, j);
+          break;
+        }
+      }
+      // search unsuccessful
+      if(j >= m->Rows()) return NULL; 
+    }
+    // 
+    for(j=i+1; j<m->Rows(); j++)
+    {
+      if(m->Val(j, i) == 1)
+      {
+        m->R1_Plus_Equals_R2(j, i);
+        inv->R1_Plus_Equals_R2(j, i);
+      }
+    }
+  }
+  // backsub
+  for(int i=m->Rows()-1; i>=0; i--)
+  {
+    for(j=i+1; j<m->Rows(); j++)
+    {
+      if(m->Val(i, j) == 1)
+      {
+        m->R1_Plus_Equals_R2(i, j);
+        inv->R1_Plus_Equals_R2(i, j);
+      }
+    }
+  }
+  
+  return inv;
 }
