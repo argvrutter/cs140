@@ -15,7 +15,7 @@ candyCrush::candyCrush(string inputFile)
     int seed, temp, sum=0, flavor, seqLen;
     vector<string> words;
     ifstream fin; // not a huge fan of C++ file IO, look at this mess
-    fin.open(inputFile);
+    fin.open(inputFile, std::ifstream::in);
     if(!fin.is_open()) return;
     // parse seed & row length
     getline(fin, line);
@@ -82,7 +82,18 @@ int candyCrush::getRowLength()
 // prints candy crush row as 8 flavors per row, left justified, 10 chars wide.
 void candyCrush::printCandy()
 {
-
+    int i=0;
+    // BVZ says no more rangies :(
+    for(auto lit = candy.begin(); lit !=candy.end(); lit++) {
+        cout.width(10);
+        cout << left << *lit; 
+        if(i == 8) {
+            cout << endl;
+            i = 0;
+            continue;
+        }
+        i++;
+    }
 }
 /**
  * choice is an int from 0 - rowlength-1 indicating which candy flavor the player
@@ -91,4 +102,9 @@ void candyCrush::printCandy()
 int candyCrush::play(int choice)
 {
     
+}
+// returns the score
+int candyCrush::getScore()
+{
+    return score;
 }
