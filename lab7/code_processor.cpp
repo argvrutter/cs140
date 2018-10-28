@@ -1,3 +1,4 @@
+#include "code_processor.h"
 /**
  * Author: Aiden Rutter
  * CS140 Lab 7: Code processing
@@ -7,79 +8,121 @@
  * 23, 26, 29-31
  */
 /**
- * @brief This creates a new prize and puts it into Prizes.
- * @param  id          [description]
- * @param  description [description]
- * @param  points      [description]
- * @param  quantity    [description]
+ * @brief This creates a new prize and puts it into Prizes. Due for 
+ * partial submission 
+ * @param  id          string, prize id.
+ * @param  description string, description of prize.
+ * @param  points      int, >= 0, representing points cost of prize.
+ * @param  quantity    number of prizes available
  * @return             0 if OK, or -1 if: Already a prize with given id, points <= 0
  * or quantity <= 0
  */
 int Code_Processor::New_Prize(string id, string description, int points, int quantity)
 {
-	return -1;
+	// error checking
+	if(points <= 0 || quantity <= 0) return -1;
+	if(Prizes.find(id) != Prizes.end()) return -1;
+	Prize* p = new Prize;
+	p->id = id;
+	p->description = description;
+	p->points = points;
+	Prizes[id] = p;
+	return 0;
 }
 /**
  * This creates a new user with the given information, and puts it into Names. 
- * The user will start with no registered phone numbers.
- * @param  username        [description]
- * @param  realname        [description]
- * @param  starting_points [description]
+ * The user will start with no registered phone numbers. Due for partial
+ * @param  username        string, username
+ * @param  realname        string, full name
+ * @param  starting_points int > 0 
  * @return                 0 if all is OK, -1 if there is already user w/ that 
- * username or starting_points <= 0
+ * username or starting_points < 0
  */
 int Code_Processor::New_User(string username, string realname, int starting_points)
 {
-	return -1;
+	if(starting_points < 0) return -1;
+	if(Names.find(username) != Names.end()) return -1;
+	User* usr = new User;
+	usr->username = username; 
+	usr->realname = realname;
+	usr->points = starting_points;
+	Names[username] = usr;
+	return 0;
 }
 /**
  * This should erase the user from Names, and it should erase all of the user's 
  * phone numbers from Phones. After that, it should call delete on the user's 
  * pointer. 
- * @param  username [description]
+ * @param  username string, username.
  * @return          0 if OK, -1 if username not in names.
  */
 int Code_Processor::Delete_User(string username)
 {
-	return -1;
+	// erase from name
+	auto it = Names.find(username);
+	if(it == Names.end()) return -1;
+	delete it->second;
+	Names.erase(it);
+	// erase from numbers
+
 }
 /**
  * This should register the given phone string with the user. That means putting 
  * the phone on both the Phones map, and on the user's phone_numbers set.
- * @param  username [description]
- * @param  phone    [description]
+ * Due for partial
+ * @param  username string, username
+ * @param  phone    string, phone number.
  * @return          0 if OK, -1 if no user with that username, or phone #
  * is already registered.
  */
 int Code_Processor::Add_Phone(string username, string phone)
 {
-	return -1;
+	if(Phones.find(phone) != Phones.end()) return -1;
+	if(Names.find(username) == Names.end()) return -1;
+	Names[username]->phone_numbers.emplace(phone);
+	Phones[phone] = Names[username];
+	return 0;
 }
 /**
  * This should remove the phone from the system -- both from Phones and from 
- * the user's phone_numbers set. 
- * @param  username [description]
- * @param  phone    [description]
+ * the user's phone_numbers set. Due for partial
+ * @param  username string, username
+ * @param  phone    string, phone
  * @return          0 if OK, -1 if there is no user with that username or no matching
  * phone number, or if the phone number is registered to a different user.
  */
 int Code_Processor::Remove_Phone(string username, string phone)
 {
-	return -1;
-
+	auto nait = Names.find(username);
+	auto phit = Phones.find(username);
+	if(nait == Names.end()) return -1;
+	if(phit == Phones.end()) return -1;
+	// pointer comparison; should work b/c Phones & Names share <3
+	if(Phones[phone] != Names[username]) return -1;
+	// deyeet from Names
+	auto it = Names[username]->phone_numbers.find(phone);
+	Names[username]->phone_numbers.erase(it);
+	// delete from Phones
+	Phones.erase(phit);
+	return 0;
 }
 /**
  * This should return a string containing all of that user's phone numbers, 
  * in lexicographic order, each separated by a newline. There should be a newline 
- * at the end of the string too.
- * @param  username [description]
+ * at the end of the string too. Due for partial
+ * @param  username string, username
  * @return          the string, or if non-existant user, "BAD USER". if no phones, 
  * return an empty string.
  */
 string Code_Processor::Show_Phones(string username)
 {
-	return -1;
-
+	string ret;
+	if(Names.find(username) == Names.end()) return "BAD USER";
+	for(const string& pnum : Names[username]->phone_numbers) {
+		ret += pnum;
+		ret += "\n";
+	}
+	return ret;
 }
 /**
  * This is called when a user enters a code. You need to first check the Codes 
@@ -127,6 +170,7 @@ int Code_Processor::Mark_Code_Used(string code)
 }
 /**
  * This should return the user's points. If the user doesn't exist, return -1.
+ * Due for partial deadline
  * @param  username [description]
  * @return          -1 if user doesn't exist, 0 if OK
  */
@@ -156,11 +200,11 @@ int Code_Processor::Redeem_Prize(string username, string prize)
  */
 Code_Processor::~Code_Processor()
 {
-	return -1;
-
+	for(auto& user : Names) delete user.second;
+	for(auto& prize : Prizes) delete prize.second;
 }
 /**
- * [Code_Processor::Write description]
+ * Partially due for partial. Writes prizes, users, phone numbers to file. 
  * @param  file [description]
  * @return      [description]
  */
