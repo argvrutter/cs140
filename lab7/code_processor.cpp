@@ -26,6 +26,7 @@ int Code_Processor::New_Prize(string id, string description, int points, int qua
 	p->id = id;
 	p->description = description;
 	p->points = points;
+	p->quantity = quantity;
 	Prizes[id] = p;
 	return 0;
 }
@@ -61,10 +62,11 @@ int Code_Processor::Delete_User(string username)
 	// erase from name
 	auto it = Names.find(username);
 	if(it == Names.end()) return -1;
+	// deletes for both phones & names;
+	for(const string& pnum : it->second->phone_numbers) Phones.erase(Phones.find(pnum));
 	delete it->second;
 	Names.erase(it);
-	// erase from numbers
-
+	return 0;
 }
 /**
  * This should register the given phone string with the user. That means putting 
@@ -94,7 +96,7 @@ int Code_Processor::Add_Phone(string username, string phone)
 int Code_Processor::Remove_Phone(string username, string phone)
 {
 	auto nait = Names.find(username);
-	auto phit = Phones.find(username);
+	auto phit = Phones.find(phone);
 	if(nait == Names.end()) return -1;
 	if(phit == Phones.end()) return -1;
 	// pointer comparison; should work b/c Phones & Names share <3
@@ -118,6 +120,7 @@ string Code_Processor::Show_Phones(string username)
 {
 	string ret;
 	if(Names.find(username) == Names.end()) return "BAD USER";
+	// phone numbers should already be sorted
 	for(const string& pnum : Names[username]->phone_numbers) {
 		ret += pnum;
 		ret += "\n";
@@ -171,13 +174,13 @@ int Code_Processor::Mark_Code_Used(string code)
 /**
  * This should return the user's points. If the user doesn't exist, return -1.
  * Due for partial deadline
- * @param  username [description]
+ * @param  username string, username
  * @return          -1 if user doesn't exist, 0 if OK
  */
 int Code_Processor::Balance(string username)
 {
-	return -1;
-
+	if(Names.find(username) == Names.end()) return -1;
+	return Names[username]->points;
 }
 /**
  * This is called when a user wants to redeem a prize. The prize is identified by 
@@ -205,11 +208,30 @@ Code_Processor::~Code_Processor()
 }
 /**
  * Partially due for partial. Writes prizes, users, phone numbers to file. 
- * @param  file [description]
- * @return      [description]
+ * ADD_USER, PRIZE, ADD_PHONE and MARK_USED
+ * @param  file c_string, file descriptor.
+ * @return      0 if success, -1 if error
  */
 int Code_Processor::Write(const char *file)
 {
-	return -1;
-
+	ofstream fout;
+	fout.open(file);
+	if(!fout.is_open()) return -1;
+	// PRIZE id points quantity description
+	for(auto& prize : Prizes) {
+		fout << "PRIZE " << prize.first << " " << prize.second->points << " ";
+		fout << prize.second->quantity << " " << prize.second->description << endl;
+	}
+	// "ADD_USER username starting_points realname"
+	for(auto& user : Names) {
+		fout << "ADD_USER " << user.second->username << " " << user.second->points;
+		fout << " " << user.second->realname << endl;
+	}
+	// ADD_PHONE username phone-number
+	for(auto& pnum : Phones) {
+		fout << "ADD_PHONE " << pnum.second->username << " " << pnum.first << endl;
+	} 
+	// MARK_USED
+	fout.close();
+	return 0;
 }
