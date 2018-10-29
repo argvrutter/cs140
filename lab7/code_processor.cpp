@@ -8,6 +8,19 @@
  * 23, 26, 29-31
  */
 /**
+ * @brief hashing function, used in codes.
+ * @param s by reference string that is hashed.
+ * @return returns unsigned int that is the hash of the string.
+ */
+unsigned int djb_hash(string &s)
+{
+  unsigned int h = 5381;
+  for (unsigned int i = 0; i < s.size(); i++) {
+    h = (h << 5) + h + s[i];
+  }
+  return h;
+}
+/**
  * @brief This creates a new prize and puts it into Prizes. Due for 
  * partial submission 
  * @param  id          string, prize id.
@@ -135,41 +148,68 @@ string Code_Processor::Show_Phones(string username)
  * divisible by 17, then it is worth ten points. Otherwise, if it is divisible by
  * 13, then it is worth three points. If the code is valid, then add it to Codes, 
  * increment the user's account 
- * @param  username [description]
- * @param  code     [description]
+ * @param  username string, username
+ * @param  code     string, code. 
  * @return          number of points added, or 0 if invalid code. -1 if code
  * has been entered before or if user doesn't exist.
  */
 int Code_Processor::Enter_Code(string username, string code)
 {
-	return -1;
-
+	int points=0;
+	if(Codes.find(code) != Codes.end()) return -1;
+	if(Names.find(username) == Names.end()) return -1;
+	unsigned int hcode = djb_hash(code);
+	if(!(hcode % 17)) {
+		points = 10;
+	} else if(!(hcode % 13)) {
+		points = 3;
+	} else {
+		return 0;
+	}
+	Codes.emplace(code);
+	Names[username]->points += points;
+	return points;
 }
 /**
  * This should work just like Enter_Code(), except the user's account is 
  * identified by the phone number. If the phone number doesn't exist, return -1. 
  * Otherwise, this should work just like Enter_Code().
- * @param  phone [description]
- * @param  code  [description]
- * @return       -1 if phone # doesn't exist
+ * @param  phone string, phone
+ * @param  code  string, code
+ * @return       -1 if phone # doesn't exist or if code already exists.
  */
 int Code_Processor::Text_Code(string phone, string code)
 {
-	return -1;
-
+	int points=0;
+	if(Codes.find(code) != Codes.end()) return -1;
+	if(Phones.find(phone) == Phones.end()) return -1;
+	unsigned int hcode = djb_hash(code);
+	if(!(hcode % 17)) {
+		points = 10;
+	} else if(!(hcode % 13)) {
+		points = 3;
+	} else {
+		return 0;
+	}
+	Codes.emplace(code);
+	Phones[phone]->points += points;
+	return points;
 }
 /**
  * This is called to mark a code as used, even though no user is entering it. 
  * This is used to help rebuild the server from a saved state (see Write() below).
  * If the code is not valid or it is already in Codes, return -1. Otherwise, add 
  * it to Codes and return 0.
- * @param  code [description]
+ * @param  code string, code
  * @return      -1 for invalid code or already in codes, or 0 if OK
  */
 int Code_Processor::Mark_Code_Used(string code)
 {
-	return -1;
-
+	if(Codes.find(code) != Codes.end()) return -1;
+	unsigned int hcode = djb_hash(code);
+	if((hcode % 17) && (hcode % 13)) return -1;
+	Codes.emplace(code);
+	return 0;
 }
 /**
  * This should return the user's points. If the user doesn't exist, return -1.
@@ -188,15 +228,25 @@ int Code_Processor::Balance(string username)
  * points, return -1. Otherwise, decrement the points from the user's account, 
  * and decrement the prize's quantity by one. If the prize's quantity is zero, 
  * remove the prize from the system (which should involve a delete call).
- * @param  username [description]
- * @param  prize    [description]
+ * @param  username string, username
+ * @param  prize    string, prize
  * @return          -1 if user doesn't have enough points or prize doesn't 
  * exist, or user doesn't exist, 0 otherwise
  */
 int Code_Processor::Redeem_Prize(string username, string prize)
 {
-	return -1;
-
+	auto usr_it = Names.find(username);
+	auto prize_it = Prizes.find(prize);
+	if(usr_it == Names.end()) return -1;
+	if(prize_it == Prizes.end()) return -1;
+	if(usr_it->second->points < prize_it->second->points) return -1;
+	usr_it->second->points -= prize_it->second->points;
+	prize_it->second->quantity--;
+	if(prize_it->second->quantity == 0) {
+		delete prize_it->second;
+		Prizes.erase(prize_it);
+	}
+	return 0;
 }
 /**
  * calls delete on all the users and prizes.
@@ -216,6 +266,7 @@ int Code_Processor::Write(const char *file)
 {
 	ofstream fout;
 	fout.open(file);
+	unsigned int i=0;
 	if(!fout.is_open()) return -1;
 	// PRIZE id points quantity description
 	for(auto& prize : Prizes) {
@@ -231,7 +282,17 @@ int Code_Processor::Write(const char *file)
 	for(auto& pnum : Phones) {
 		fout << "ADD_PHONE " << pnum.second->username << " " << pnum.first << endl;
 	} 
-	// MARK_USED
+	// MARK_USED code1 code2 ... code19
+	if(Codes.size() > 0) fout << "MARK_USED";
+	for(const string& code : Codes) {
+		if(i >= 19) {
+			fout << endl << "MARK_USED";
+			i = 0;
+		}
+		fout << " " << code; 
+		i++;
+	}
+	if(Codes.size() > 0) fout << endl;
 	fout.close();
 	return 0;
 }
